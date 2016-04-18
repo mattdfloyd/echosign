@@ -16,6 +16,11 @@ class Agreement extends CreatorBase
     protected $agreement;
 
     /**
+     * @var DocumentCreationInfo
+     */
+    protected $documentCreationInfo;
+
+    /**
      * @var string
      */
     protected $signatureType = 'ESIGN';
@@ -43,15 +48,7 @@ class Agreement extends CreatorBase
         $fileInfo                    = new FileInfo();
         $fileInfo->libraryDocumentId = $libraryDocumentId;
 
-        $docCreationInfo = new DocumentCreationInfo(
-            $fileInfo,
-            $agreementName,
-            $this->getSignatureType(),
-            $this->getSignatureFlow()
-        );
-
-        $docCreationInfo->setMessage( $message )
-                        ->addRecipient( 'SIGNER', $signerEmail );
+        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
 
         $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
 
@@ -86,15 +83,7 @@ class Agreement extends CreatorBase
         $fileInfo                      = new FileInfo();
         $fileInfo->libraryDocumentName = $libraryDocumentName;
 
-        $docCreationInfo = new DocumentCreationInfo(
-            $fileInfo,
-            $agreementName,
-            $this->getSignatureType(),
-            $this->getSignatureFlow()
-        )
-        ;
-        $docCreationInfo->setMessage( $message )
-                        ->addRecipient( 'SIGNER', $signerEmail );
+        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
 
         $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
 
@@ -130,15 +119,7 @@ class Agreement extends CreatorBase
         $fileInfo = new FileInfo();
         $fileInfo->setDocumentURL( $fileName, $url );
 
-        $docCreationInfo = new DocumentCreationInfo(
-            $fileInfo,
-            $agreementName,
-            $this->getSignatureType(),
-            $this->getSignatureFlow()
-        );
-
-        $docCreationInfo->setMessage( $message )
-                        ->addRecipient( 'SIGNER', $signerEmail );
+        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
 
         $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
 
@@ -173,15 +154,7 @@ class Agreement extends CreatorBase
         $fileInfo                      = new FileInfo();
         $fileInfo->transientDocumentId = $transientDocumentId;
 
-        $docCreationInfo = new DocumentCreationInfo(
-            $fileInfo,
-            $agreementName,
-            $this->getSignatureType(),
-            $this->getSignatureFlow()
-        );
-
-        $docCreationInfo->setMessage( $message )
-                        ->addRecipient( 'SIGNER', $signerEmail );
+        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
 
         $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
 
@@ -290,6 +263,36 @@ class Agreement extends CreatorBase
     public function setSignatureFlow( $signatureFlow )
     {
         $this->signatureFlow = $signatureFlow;
+        return $this;
+    }
+
+    /**
+     * @return DocumentCreationInfo
+     */
+    public function getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail)
+    {
+        if (is_null($this->documentCreationInfo)) {
+            $documentCreationInfo = new DocumentCreationInfo($fileInfo, $agreementName, $this->getSignatureType(), $this->getSignatureFlow());
+        }
+
+        $documentCreationInfo->setMessage( $message )
+                             ->addRecipient( 'SIGNER', $signerEmail );
+
+        foreach ($this->mergefieldInfos as $mergefieldInfo) {
+            $documentCreationInfo->addMergeFieldInfo($mergefieldInfo);
+        }
+
+        return $documentCreationInfo;
+    }
+
+    /**
+     * @param DocumentCreationInfo $documentCreationInfo
+     * @return $this
+     */
+    public function setDocumentCreationInfo(DocumentCreationInfo $documentCreationInfo)
+    {
+        $this->documentCreationInfo = $documentCreationInfo;
+
         return $this;
     }
 
