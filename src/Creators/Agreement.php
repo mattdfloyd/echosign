@@ -29,6 +29,10 @@ class Agreement extends CreatorBase
      * @var string
      */
     protected $signatureFlow = 'SENDER_SIGNS_LAST';
+    /**
+     * @var array
+     */
+    protected $mergefieldInfos = [];
 
     /**
      * Create an agreement from a libraryDocumentId for specified signerEmail with message. You can use
@@ -296,5 +300,13 @@ class Agreement extends CreatorBase
         return $this;
     }
 
+    public function setMergeFieldInfos($mergefieldInfos)
+    {
+        foreach ((array) $mergefieldInfos as $mergefieldInfo) {
+            $this->mergefieldInfos[] = $mergefieldInfo;
+        }
+
+        return $this;
+    }
 
 }
