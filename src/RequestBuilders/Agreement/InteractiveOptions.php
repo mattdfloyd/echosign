@@ -22,7 +22,12 @@ class InteractiveOptions implements RequestBuilder
     /**
      * @var bool
      */
-    public $autoLoginUser = true;
+    public $autoLoginUser;
+
+    /**
+     * @var bool
+     */
+    public $locale;
 
     /**
      * @return array
@@ -32,7 +37,8 @@ class InteractiveOptions implements RequestBuilder
         return [
             'noChrome'           => (bool) $this->noChrome,
             'authoringRequested' => (bool) $this->authoringRequested,
-            'autoLoginUser'      => (bool) $this->autoLoginUser
+            'autoLoginUser'      => (bool) $this->autoLoginUser,
+            'locale'             => (bool) $this->locale,
         ];
     }
 
