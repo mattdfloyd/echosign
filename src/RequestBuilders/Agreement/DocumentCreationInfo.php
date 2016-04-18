@@ -24,7 +24,6 @@ class DocumentCreationInfo implements RequestBuilder
     protected $signatureType = 'ESIGN';
     public $callbackinfo;
     public $daysUntilSigningDeadline;
-    public $locale = 'en_US';
 
     /**
      * SENDER_SIGNATURE_NOT_REQUIRED, SENDER_SIGNS_LAST, or SENDER_SIGNS_FIRST
@@ -89,18 +88,6 @@ class DocumentCreationInfo implements RequestBuilder
     public function setMessage( $message )
     {
         $this->message = $message;
-        return $this;
-    }
-
-    /**
-     * for example en_US or fr_FR
-     * @param $locale
-     * @return $this
-     */
-    public function setLocale( $locale )
-    {
-        // for example en_US or fr_FR
-        $this->locale = $locale;
         return $this;
     }
 
@@ -317,7 +304,6 @@ class DocumentCreationInfo implements RequestBuilder
             'signatureType'            => $this->signatureType,
             'callbackInfo'             => $this->callbackinfo,
             'daysUntilSigningDeadline' => $this->daysUntilSigningDeadline,
-            'locale'                   => $this->locale,
             'signatureFlow'            => $this->signatureFlow,
             'message'                  => $this->message,
             'reminderFrequency'        => $this->reminderFrequency,
