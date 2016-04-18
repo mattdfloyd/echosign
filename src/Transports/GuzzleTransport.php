@@ -1,12 +1,13 @@
 <?php
 namespace Echosign\Transports;
 
-use Echosign\Abstracts\HttpRequest;
-use Echosign\Exceptions\JsonApiResponseException;
-use Echosign\Interfaces\HttpTransport;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Message\Response;
+use Echosign\Abstracts\HttpRequest;
+use Echosign\Interfaces\HttpTransport;
+use GuzzleHttp\Exception\ClientException;
+use Echosign\Exceptions\JsonApiResponseException;
 
 /**
  * Class GuzzleTransport
@@ -41,9 +42,9 @@ class GuzzleTransport implements HttpTransport
     public function handleRequest( HttpRequest $httpRequest )
     {
         if ($httpRequest->isJsonRequest()) {
-            $requestBody['json'] = $httpRequest->getBody();
+            $requestBody = json_encode($httpRequest->getBody());
         } else {
-            $requestBody['body'] = $httpRequest->getBody();
+            $requestBody = $httpRequest->getBody();
         }
 
         if ($httpRequest->saveResponseToFile()) {
@@ -56,13 +57,12 @@ class GuzzleTransport implements HttpTransport
             throw new \RuntimeException( 'request url is empty.' );
         }
 
-        $request = $this->client->createRequest(
+        $request = new Request(
             $httpRequest->getRequestMethod(),
             $url,
+            $httpRequest->getHeaders(),
             $requestBody
         );
-
-        $request->setHeaders( $httpRequest->getHeaders() );
 
         try {
             $response = $this->client->send( $request );
@@ -70,7 +70,6 @@ class GuzzleTransport implements HttpTransport
             $this->httpException = $e;
             $response            = $e->getResponse();
         }
-
         return $this->handleResponse( $response );
     }
 
@@ -81,14 +80,13 @@ class GuzzleTransport implements HttpTransport
      */
     public function handleResponse( $response )
     {
-        $contentType = $response->getHeader( 'content-type' );
+        // $contentType = $response->getHeader( 'content-type' );
+        // // if its not json, then just return the response and handle it in your own object.
+        // if (stripos( $contentType, 'application/json' ) === false) {
+        //     return $response;
+        // }
 
-        // if its not json, then just return the response and handle it in your own object.
-        if (stripos( $contentType, 'application/json' ) === false) {
-            return $response;
-        }
-
-        $json = $response->json();
+        $json = json_decode($response->getBody(), true);
 
         // adobe says hey this didn't work!
         if ($response->getStatusCode() >= 400) {
