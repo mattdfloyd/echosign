@@ -28,7 +28,8 @@ class Agreement extends CreatorBase
     /**
      * @var string
      */
-    protected $signatureFlow = 'SENDER_SIGNS_LAST';
+    protected $signatureFlow = 'SENDER_SIGNATURE_NOT_REQUIRED';
+
     /**
      * @var array
      */
