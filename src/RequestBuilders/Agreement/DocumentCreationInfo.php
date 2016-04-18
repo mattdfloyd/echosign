@@ -36,7 +36,7 @@ class DocumentCreationInfo implements RequestBuilder
 
     protected $formFieldLayerTemplates = [ ];
     protected $securityOptions;
-    protected $recipients = [ ];
+    protected $recipientSetInfos = [ ];
     protected $ccs = [ ];
     protected $vaultingInfo;
     protected $mergeFieldInfo = [ ];
@@ -182,7 +182,7 @@ class DocumentCreationInfo implements RequestBuilder
      */
     public function addRecipients( RecipientInfo $recipient )
     {
-        $this->recipients[] = $recipient;
+        $this->recipientSetInfos[] = $recipient;
 
         return $this;
     }
@@ -197,8 +197,8 @@ class DocumentCreationInfo implements RequestBuilder
      */
     public function addRecipient( $role, $email = null, $fax = null )
     {
-        $info               = new RecipientInfo( $role, $email, $fax );
-        $this->recipients[] = $info;
+        $info               = new RecipientSetInfo( $role, $email, $fax );
+        $this->recipientSetInfos[] = $info;
         return $this;
     }
 
@@ -325,10 +325,10 @@ class DocumentCreationInfo implements RequestBuilder
             }
         }
 
-        if (count( $this->recipients )) {
-            $data['recipients'] = [ ];
-            foreach ($this->recipients as $t) {
-                $data['recipients'][] = $t->toArray();
+        if (count( $this->recipientSetInfos )) {
+            $data['recipientSetInfos'] = [ ];
+            foreach ($this->recipientSetInfos as $t) {
+                $data['recipientSetInfos'][] = $t->toArray();
             }
         }
 
