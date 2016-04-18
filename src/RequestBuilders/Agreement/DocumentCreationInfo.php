@@ -53,7 +53,7 @@ class DocumentCreationInfo implements RequestBuilder
      */
     public function __construct( FileInfo $fileInfo, $name, $signatureType, $signatureFlow )
     {
-        $this->fileInfos[] = $fileInfo;
+        $this->addFileInfo($fileInfo);
 
         $this->setAgreementName( $name );
 
