@@ -35,6 +35,19 @@ class Agreement extends CreatorBase
      */
     protected $mergefieldInfos = [];
 
+
+    /**
+     * @param $token
+     * @param HttpTransport $transport
+     * @param array $transportOptions
+     */
+    public function __construct( $token, HttpTransport $transport = null, array $transportOptions = [] )
+    {
+        parent::__construct($token, $transport, $transportOptions);
+
+        $this->agreement = new Agreements( $this->getToken(), $this->getTransport() );
+    }
+
     /**
      * Create an agreement from a libraryDocumentId for specified signerEmail with message. You can use
      * $this->getResponse() to get created agreement. If successful it returns the agreementId.
@@ -48,26 +61,10 @@ class Agreement extends CreatorBase
      */
     public function createFromLibraryDocumentId( $signerEmail, $message, $libraryDocumentId, $agreementName )
     {
-        $this->agreement = new Agreements( $this->getToken(), $this->getTransport() );
-
         $fileInfo                    = new FileInfo();
         $fileInfo->libraryDocumentId = $libraryDocumentId;
 
-        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
-
-        $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
-
-        try {
-            $this->response = $this->agreement->create( $agreementCreationInfo );
-        } catch ( JsonApiResponseException $e ) {
-            $this->errorMessages[ $e->getCode() ] = sprintf( '%s - %s', $e->getApiCode(), $e->getMessage() );
-            return false;
-        } catch ( \Exception $e ) {
-            $this->errorMessages[ $e->getCode() ] = $e->getMessage();
-            return false;
-        }
-
-        return $this->response->getAgreementId();
+        return $this->send($fileInfo, $agreementName, $message, $signerEmail);
     }
 
     /**
@@ -83,26 +80,10 @@ class Agreement extends CreatorBase
      */
     public function createFromLibraryDocumentName( $signerEmail, $message, $libraryDocumentName, $agreementName )
     {
-        $this->agreement = new Agreements( $this->getToken(), $this->getTransport() );
-
         $fileInfo                      = new FileInfo();
         $fileInfo->libraryDocumentName = $libraryDocumentName;
 
-        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
-
-        $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
-
-        try {
-            $this->response = $this->agreement->create( $agreementCreationInfo );
-        } catch ( JsonApiResponseException $e ) {
-            $this->errorMessages[ $e->getCode() ] = sprintf( '%s - %s', $e->getApiCode(), $e->getMessage() );
-            return false;
-        } catch ( \Exception $e ) {
-            $this->errorMessages[ $e->getCode() ] = $e->getMessage();
-            return false;
-        }
-
-        return $this->response->getAgreementId();
+        return $this->send($fileInfo, $agreementName, $message, $signerEmail);
     }
 
     /**
@@ -119,26 +100,10 @@ class Agreement extends CreatorBase
      */
     public function createFromUrl( $signerEmail, $message, $fileName, $url, $agreementName )
     {
-        $this->agreement = new Agreements( $this->getToken(), $this->getTransport() );
-
         $fileInfo = new FileInfo();
         $fileInfo->setDocumentURL( $fileName, $url );
 
-        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
-
-        $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
-
-        try {
-            $this->response = $this->agreement->create( $agreementCreationInfo );
-        } catch ( JsonApiResponseException $e ) {
-            $this->errorMessages[ $e->getCode() ] = sprintf( '%s - %s', $e->getApiCode(), $e->getMessage() );
-            return false;
-        } catch ( \Exception $e ) {
-            $this->errorMessages[ $e->getCode() ] = $e->getMessage();
-            return false;
-        }
-
-        return $this->response->getAgreementId();
+        return $this->send($fileInfo, $agreementName, $message, $signerEmail);
     }
 
     /**
@@ -154,26 +119,10 @@ class Agreement extends CreatorBase
      */
     public function createFromTransientDocumentId( $signerEmail, $message, $transientDocumentId, $agreementName )
     {
-        $this->agreement = new Agreements( $this->getToken(), $this->getTransport() );
-
         $fileInfo                      = new FileInfo();
         $fileInfo->transientDocumentId = $transientDocumentId;
 
-        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
-
-        $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
-
-        try {
-            $this->response = $this->agreement->create( $agreementCreationInfo );
-        } catch ( JsonApiResponseException $e ) {
-            $this->errorMessages[ $e->getCode() ] = sprintf( '%s - %s', $e->getApiCode(), $e->getMessage() );
-            return false;
-        } catch ( \Exception $e ) {
-            $this->errorMessages[ $e->getCode() ] = $e->getMessage();
-            return false;
-        }
-
-        return $this->response->getAgreementId();
+        return $this->send($fileInfo, $agreementName, $message, $signerEmail);
     }
 
     /**
@@ -277,17 +226,17 @@ class Agreement extends CreatorBase
     public function getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail)
     {
         if (is_null($this->documentCreationInfo)) {
-            $documentCreationInfo = new DocumentCreationInfo($fileInfo, $agreementName, $this->getSignatureType(), $this->getSignatureFlow());
+            $this->documentCreationInfo = new DocumentCreationInfo($fileInfo, $agreementName, $this->getSignatureType(), $this->getSignatureFlow());
         }
 
-        $documentCreationInfo->setMessage( $message )
+        $this->documentCreationInfo->setMessage( $message )
                              ->addRecipient( 'SIGNER', $signerEmail );
 
         foreach ($this->mergefieldInfos as $mergefieldInfo) {
-            $documentCreationInfo->addMergeFieldInfo($mergefieldInfo);
+            $this->documentCreationInfo->addMergeFieldInfo($mergefieldInfo);
         }
 
-        return $documentCreationInfo;
+        return $this->documentCreationInfo;
     }
 
     /**
@@ -308,6 +257,25 @@ class Agreement extends CreatorBase
         }
 
         return $this;
+    }
+
+    public function send($fileInfo, $agreementName, $message, $signerEmail)
+    {
+        $docCreationInfo = $this->getDocumentCreationInfo($fileInfo, $agreementName, $message, $signerEmail);
+
+        $agreementCreationInfo = new AgreementCreationInfo( $docCreationInfo, new InteractiveOptions() );
+
+        try {
+            $this->response = $this->agreement->create( $agreementCreationInfo );
+        } catch ( JsonApiResponseException $e ) {
+            $this->errorMessages[ $e->getCode() ] = sprintf( '%s - %s', $e->getApiCode(), $e->getMessage() );
+            return false;
+        } catch ( \Exception $e ) {
+            $this->errorMessages[ $e->getCode() ] = $e->getMessage();
+            return false;
+        }
+
+        return $this->response->getAgreementId();
     }
 
 }
