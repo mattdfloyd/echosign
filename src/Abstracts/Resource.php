@@ -170,7 +170,7 @@ abstract class Resource
      * @param $message
      * @param $data
      */
-    protected function logDebug( $message, array $data = [ ] )
+    protected function logDebug( $message, $data = [ ] )
     {
         $logger = $this->getLogger();
 
@@ -236,11 +236,6 @@ abstract class Resource
 
         $transport = $this->getTransport();
         $response  = $transport->handleRequest( $request );
-
-        if (!is_array( $response )) {
-            $this->responseReceived = $response;
-            throw new \RuntimeException( 'Bad response received! Please inspect responseReceived' );
-        }
 
         $this->logDebug( "response", $response );
 

@@ -80,11 +80,11 @@ class GuzzleTransport implements HttpTransport
      */
     public function handleResponse( $response )
     {
-        // $contentType = $response->getHeader( 'content-type' );
-        // // if its not json, then just return the response and handle it in your own object.
-        // if (stripos( $contentType, 'application/json' ) === false) {
-        //     return $response;
-        // }
+        $contentType = $response->getHeader('content-type');
+        // if its not json, then just return the response and handle it in your own object.
+        if (stripos( $contentType[0], 'application/json' ) === false) {
+            return $response;
+        }
 
         $json = json_decode($response->getBody(), true);
 

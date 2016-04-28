@@ -123,11 +123,11 @@ class Agreements extends Resource
      * @param $saveToPath
      * @return bool
      */
-    public function combinedDocument( $agreementId, $saveToPath )
+    public function combinedDocument( $agreementId )
     {
         $this->setApiRequestUrl( $agreementId . '/combinedDocument' );
 
-        return $this->saveFileRequest( $saveToPath );
+        return $this->simpleGetRequest();
     }
 
     /**
